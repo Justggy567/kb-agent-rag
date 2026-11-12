@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+
 from app.agent.graph import build_graph
 from app.api import chat as chat_api
 from app.api import documents as doc_api
@@ -52,20 +53,49 @@ async def _make_checkpointer():
         return MemorySaver(), None
 
 
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     await init_pool()
+#     saver, ck_pool = await _make_checkpointer()
+#     app.state.graph = build_graph(checkpointer=saver)
+#     app.state.ck_pool = ck_pool
+#     log.info("图已编译，服务就绪")
+#     try:
+#         yield
+#     finally:
+#         await close_pool()
+#         if ck_pool is not None:
+#             with contextlib.suppress(Exception):
+#                 await ck_pool.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_pool()
-    saver, ck_pool = await _make_checkpointer()
-    app.state.graph = build_graph(checkpointer=saver)
-    app.state.ck_pool = ck_pool
-    log.info("图已编译，服务就绪")
+    ck_pool = None
+
     try:
+        await init_pool()
+
+        saver, ck_pool = await _make_checkpointer()
+
+        app.state.graph = build_graph(
+            checkpointer=saver
+        )
+        app.state.ck_pool = ck_pool
+
+        log.info("图已编译，服务就绪")
+
         yield
+
     finally:
-        await close_pool()
-        if ck_pool is not None:
-            with contextlib.suppress(Exception):
+        try:
+            if ck_pool is not None:
                 await ck_pool.close()
+        finally:
+            await close_pool()
+
+
+
 
 
 app = FastAPI(title="企业知识库与 Agent 智能问答平台", version="1.0.0", lifespan=lifespan)

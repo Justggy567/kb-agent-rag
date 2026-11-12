@@ -23,7 +23,8 @@ def build_graph(checkpointer=None):
     g = StateGraph(AgentState)
 
     g.add_node("rewrite", nodes.rewrite)
-    g.add_node("route", nodes.route)
+    # g.add_node("route", nodes.route)
+    g.add_node("route_node", nodes.route)
     g.add_node("retrieve", nodes.retrieve)
     g.add_node("text2sql", nodes.text2sql)
     g.add_node("merge", nodes.merge)
@@ -32,10 +33,10 @@ def build_graph(checkpointer=None):
     g.add_node("verify", nodes.verify)
 
     g.add_edge(START, "rewrite")
-    g.add_edge("rewrite", "route")
+    g.add_edge("rewrite", "route_node")
 
     g.add_conditional_edges(
-        "route",
+        "route_node",
         nodes.route_selector,
         {"kb": "retrieve", "sql": "text2sql", "both": "retrieve", "direct": "generate"},
     )

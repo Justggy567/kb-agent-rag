@@ -11,8 +11,29 @@ _ro_pool: asyncpg.Pool | None = None
 
 async def init_pool() -> None:
     global _pool, _ro_pool
-    _pool = await asyncpg.create_pool(settings.dsn, min_size=2, max_size=10)
-    _ro_pool = await asyncpg.create_pool(settings.readonly_dsn, min_size=1, max_size=4)
+    
+    rw = await asyncpg.create_pool(
+        settings.dsn,
+        min_size=2,
+        max_size=10,
+    )
+
+    try:
+        ro = await asyncpg.create_pool(
+            settings.readonly_dsn,
+            min_size=1,
+            max_size=4,
+        )
+    except BaseException:
+        await rw.close()
+        raise
+
+    _pool = rw
+    _ro_pool = ro
+
+
+
+
 
 
 async def close_pool() -> None:

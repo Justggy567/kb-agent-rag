@@ -2,6 +2,9 @@ from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from pydantic import SecretStr
+from urllib.parse import quote
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
@@ -11,9 +14,11 @@ class Settings(BaseSettings):
     postgres_port: int = 5433
     postgres_db: str = "ragdb"
     postgres_user: str = "rag"
-    postgres_password: str = "rag_pwd_2026"
+    postgres_password:  SecretStr
+
+    # 只读数据库
     readonly_user: str = "nw_readonly"
-    readonly_password: str = "nw_readonly_pwd"
+    readonly_password:  SecretStr
 
     # 模型
     deepseek_api_key: str = ""
@@ -38,19 +43,46 @@ class Settings(BaseSettings):
     upload_dir: str = "./data/uploads"
     max_retry: int = 2
 
+    # @property
+    # def dsn(self) -> str:
+    #     return (
+    #         f"postgresql://{self.postgres_user}:{self.postgres_password}"
+    #         f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+    #     )
     @property
     def dsn(self) -> str:
+        user = quote(self.postgres_user, safe="")
+        password = quote(
+        self.postgres_password.get_secret_value(),
+        safe="",
+        )
+
         return (
-            f"postgresql://{self.postgres_user}:{self.postgres_password}"
+            f"postgresql://{user}:{password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
 
+    
+    # @property
+    # def readonly_dsn(self) -> str:
+    #     return (
+    #         f"postgresql://{self.readonly_user}:{self.readonly_password}"
+    #         f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+    #     )
+    
     @property
     def readonly_dsn(self) -> str:
-        return (
-            f"postgresql://{self.readonly_user}:{self.readonly_password}"
-            f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+        user = quote(self.readonly_user, safe="")
+        password = quote(
+        self.readonly_password.get_secret_value(),
+        safe="",
         )
+
+        return (
+        f"postgresql://{user}:{password}"
+        f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+        )
+
 
 
 @lru_cache

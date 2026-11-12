@@ -10,6 +10,10 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from app.config import settings
 from app.db import pool
 from app.rag.ingest import ingest_file
+from typing import Annotated
+from fastapi import Path
+from app.db import ro_pool
+
 
 router = APIRouter(prefix="/api/documents", tags=["documents"])
 
@@ -51,7 +55,7 @@ async def upload(file: UploadFile = File(...)):
 
 @router.get("")
 async def list_documents():
-    async with pool().acquire() as conn:
+    async with ro_pool().acquire() as conn:
         rows = await conn.fetch(
             """SELECT id, title, source_type, status, chunk_count, page_count,
                       error_msg, created_at
@@ -87,10 +91,41 @@ async def delete_document(doc_id: int):
 
 @router.get("/stats")
 async def stats():
-    async with pool().acquire() as conn:
+    async with ro_pool().acquire() as conn:
         row = await conn.fetchrow(
             """SELECT count(*) AS docs,
                       coalesce(sum(chunk_count), 0) AS chunks
                FROM documents WHERE status = 'ready'"""
         )
     return {"documents": row["docs"], "chunks": row["chunks"]}
+
+
+
+@router.get("/{doc_id}")
+async def get_document(
+    doc_id: Annotated[int, Path(gt=0)]
+):
+    async with ro_pool().acquire() as conn:
+        row = await conn.fetchrow(
+            """
+            SELECT
+                id,
+                title,
+                source_type,
+                status,
+                chunk_count,
+                page_count,
+                created_at
+            FROM documents
+            WHERE id = $1
+            """,
+            doc_id,
+        )
+
+    if row is None:
+        raise HTTPException(
+            status_code=404,
+            detail="文档不存在",
+        )
+
+    return dict(row)
