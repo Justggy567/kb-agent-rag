@@ -1,0 +1,44 @@
+# ===== 密钥与本地配置 =====
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ===== 虚拟环境 =====
+.venv/
+venv/
+env/
+ENV/
+
+# ===== 运行时数据（向量库、上传文件、日志）=====
+data/
+!data/.gitkeep
+*.log
+logs/
+
+# ===== 工具 / 编辑器 =====
+.workbuddy/
+.slidep/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# ===== 测试与缓存 =====
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/

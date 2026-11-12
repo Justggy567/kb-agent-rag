@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>企业知识库与经营数据助手</title>
+<link rel="stylesheet" href="/static/style.css" />
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="dot"></span>
+      <div>
+        <div class="brand-title">企业知识库</div>
+        <div class="brand-sub">制度问答 · 经营数据</div>
+      </div>
+    </div>
+
+    <div class="stat-row" id="stats">
+      <div class="stat"><b id="stat-docs">0</b><span>文档</span></div>
+      <div class="stat"><b id="stat-chunks">0</b><span>分块</span></div>
+    </div>
+
+    <label class="upload">
+      <input type="file" id="file" accept=".pdf,.docx,.md,.txt" hidden />
+      <span>＋ 上传文档</span>
+    </label>
+
+    <ul class="doc-list" id="docs"></ul>
+    <div class="tip">支持 PDF / DOCX / MD / TXT，上传后自动解析、分块、向量化</div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <div class="topbar-title">智能问答</div>
+        <div class="topbar-sub">检索增强 + 语义层查询，回答带来源</div>
+      </div>
+      <button class="ghost" id="new-chat">新会话</button>
+    </header>
+
+    <div class="messages" id="messages">
+      <div class="empty" id="empty">
+        <h2>问点什么试试</h2>
+        <div class="chips">
+          <button class="chip">A 级客户的无理由退货窗口是多少天？</button>
+          <button class="chip">上月销售额最高的 5 个品类</button>
+          <button class="chip">按折扣审批规范，哪些订单需要总监审批？</button>
+          <button class="chip">按库存预警标准，当前哪些商品处于红色预警？</button>
+        </div>
+      </div>
+    </div>
+
+    <form class="composer" id="composer">
+      <textarea id="input" rows="1" placeholder="输入问题，Enter 发送，Shift+Enter 换行"></textarea>
+      <button type="submit" id="send">发送</button>
+    </form>
+  </main>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
