@@ -140,7 +140,7 @@ async def resolve(conn: asyncpg.Connection, logical_table: str) -> tuple[str, di
         "WHERE table_schema='public' AND table_name=$1",
         real_table,
     )
-    actual = {r["column_name"].lower(): r["column_name"] for r in rows}
+    actual = {r["column_name"].lower().replace("_", ""): r["column_name"] for r in rows}
 
     mapping: dict[str, str] = {}
     for logical_col, raw in TABLE_COLUMNS[logical_table].items():
@@ -174,7 +174,7 @@ async def main() -> None:
         port=settings.postgres_port,
         database=settings.postgres_db,
         user=settings.postgres_user,
-        password=settings.postgres_password,
+        password=settings.postgres_password.get_secret_value(),
     )
 
     if await table_exists(conn, "orders") and not args.force:
