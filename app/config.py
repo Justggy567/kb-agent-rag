@@ -22,8 +22,8 @@ class Settings(BaseSettings):
 
     # 模型
     deepseek_api_key: str = ""
-    deepseek_base_url: str = "https://api.deepseek.com/v1"
-    deepseek_model: str = "deepseek-chat"
+    deepseek_base_url: str = "https://api.deepseek.com"
+    deepseek_model: str = "deepseek-flash"
 
     ollama_base_url: str = "http://localhost:11434"
     embed_model: str = "bge-m3"
