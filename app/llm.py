@@ -1,4 +1,4 @@
-"""DeepSeek API 与 Ollama Embedding 的异步封装（D6 教学增强版）。
+"""DeepSeek API 与 Ollama Embedding 的异步封装。
 
 保留原项目已有的对外接口：
 - chat(prompt, system=None, temperature=0.1, json_mode=False, max_tokens=None)
@@ -308,7 +308,11 @@ async def embed_with_ollama(texts: list[str]) -> list[list[float]]:
         async with httpx.AsyncClient(timeout=EMBED_TIMEOUT) as client:
             resp = await client.post(
                 _endpoint(settings.ollama_base_url, "/api/embed"),
-                json={"model": settings.embed_model, "input": texts},
+                json={
+                    "model": settings.embed_model, 
+                    "input": texts,
+                    "truncate": False
+                    },
             )
         if resp.status_code >= 400:
             logger.warning("Ollama embedding HTTP status=%s", resp.status_code)
@@ -338,4 +342,12 @@ async def embed_with_ollama(texts: list[str]) -> list[list[float]]:
         raise LLMError("Embedding 向量格式异常")
     if len({len(v) for v in vectors}) != 1:
         raise LLMError("Embedding 向量维度不一致")
+
+    if any(len(v) != settings.embed_dim for v in vectors):
+        raise LLMError(
+            f"Embedding 维度不匹配，"
+            f"期望 {settings.embed_dim}，"
+            f"实际 {len(vectors[0])}"
+        )
+
     return vectors
